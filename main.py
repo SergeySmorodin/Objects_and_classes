@@ -8,14 +8,11 @@ class Student:
       self.grades = {}
 
   def rate_lecturer(self, lecturer, course, grade):
-            if isinstance(lecturer, Lecturer) and list(set(lecturer.courses_attached) & set(self.courses_in_progress)) and course in self.courses_in_progress:
-                if lecturer.grades.get(course):
-                    lecturer.grades[course].append(grade)
-                else:
-                      lecturer.grades[course] = [grade]
+            if isinstance(lecturer, Lecturer) and course in lecturer.courses_attached and course in self.courses_in_progress:
+              lecturer.grades.setdefault(course, []).append(grade)
             else:
-                return print('Ошибка')
-             
+              print('Недопустимая оценка')
+           
   def average_grade(self):
       total_grades = 0
       count = 0
@@ -39,11 +36,15 @@ class Student:
   def __ge__(self, other):
       if isinstance(other, Student):
           return self.average_grade() >= other.average_grade()
+      
+  def __eq__(self, other):
+    if isinstance(other, Student):
+        return self.average_grade() == other.average_grade()
 
   def __str__(self):
       return (f'Имя: {self.name}\n'
               f'Фамилия: {self.surname}\n'
-              f'Средняя оценка за домашние задания: {self.average_grade()}\n'
+              f'Средняя оценка за домашние задания: {round(self.average_grade(), 1)}\n'
               f'Курсы в процессе изучения: {", ".join(self.courses_in_progress)}\n'
               f'Завершенные курсы: {", ".join(self.finished_courses)}')
 
@@ -86,11 +87,15 @@ class Lecturer(Mentor):
   def __ge__(self, other):
       if isinstance(other, Lecturer):
           return self.average_grade() >= other.average_grade()
+      
+  def __eq__(self, other):
+    if isinstance(other, Lecturer):
+        return self.average_grade() == other.average_grade()
 
   def __str__(self):
       return (f'Имя: {self.name}\n'
               f'Фамилия: {self.surname}\n'
-              f'Средняя оценка за лекции: {self.average_grade()}')
+              f'Средняя оценка за лекции: {round(self.average_grade(), 1)}')
 
 
 class Reviewer(Mentor):
@@ -99,12 +104,9 @@ class Reviewer(Mentor):
 
   def rate_hw(self, student, course, grade):
       if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
-          if course in student.grades:
-              student.grades[course] += [grade]
-          else:
-              student.grades[course] = [grade]
+        student.grades.setdefault(course, []).append(grade)
       else:
-          return 'Ошибка'
+          return 'Недопустимая оценка'
           
   def __str__(self):
       return f'Имя: {self.name}\nФамилия: {self.surname}'
@@ -167,7 +169,7 @@ def average_student_grade(students, course):
       if course in student.grades:
           total_grades += sum(student.grades[course])
           count += len(student.grades[course])
-  return total_grades / count if count > 0 else 0
+  return round(total_grades / count, 1) if count > 0 else 0
 
 # Функция для подсчета средней оценки за лекции всех лекторов
 def average_lecturer_grade(lecturers, course):
@@ -177,7 +179,7 @@ def average_lecturer_grade(lecturers, course):
       if course in lecturer.grades:
           total_grades += sum(lecturer.grades[course])
           count += len(lecturer.grades[course])
-  return total_grades / count if count > 0 else 0
+  return round(total_grades / count, 1) if count > 0 else 0
 
 # Пример использования функций
 students_list = [student1, student2]
